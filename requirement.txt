@@ -1,0 +1,23 @@
+Here is a `requirements.txt` file based on the code skeleton and the tasks it needs to perform.
+
+I've included comments to explain the purpose of each library.
+
+```
+# requirements.txt
+
+# For all numerical operations and handling image arrays
+numpy
+
+# For camera access, image/video processing, and drawing UI elements
+# Also contains the 'cv2.dnn' module for running models
+opencv-python
+
+# A high-performance inference engine for running the .onnx models
+# (face detector, liveness model, and face recognizer).
+# This is generally recommended over cv2.dnn for compatibility and speed.
+onnxruntime
+
+# For the face recognition step. Specifically, to easily calculate
+# the cosine similarity between face embeddings.
+scikit-learn
+```
