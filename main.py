@@ -1,61 +1,42 @@
+from ultralytics import YOLO
 import cv2
 import numpy as np
-
-# --- 1. Placeholder AI Functions (You must implement these!) ---
+from deepface import DeepFace
+from keras.models import model_from_yaml
+from keras.preprocessing.image import img_to_array
 
 def load_models():
-    """
-    Load all your pre-trained models from disk.
-    You'll use libraries like cv2.dnn or onnxruntime.
-    """
+    yaml_file = open("trained_model/RGB_rPPG_merge_softmax_.yaml", 'r')
+    loaded_model_yaml = yaml_file.read()
+    yaml_file.close()
+    liveness_model = model_from_yaml(loaded_model_yaml)
+
     print("Loading models (detector, liveness, recognizer)...")
     
-    # Example using cv2.dnn for an ONNX model
-    face_detector = cv2.dnn.readNet("yolov8-face.onnx")
-    liveness_model = cv2.dnn.readNet("liveness-model.onnx")
-    face_recognizer = cv2.dnn.readNet("arcface-model.onnx")
+    face_detector = YOLO('yolov11n-face.pt')
+
+    liveness_model.load_weights("trained_model/RGB_rPPG_merge_softmax_.h5")
+
+    face_recognizer = YOLO("yolo11freeze.pt")
     
     # For this skeleton, we'll return placeholders
-    return "yolo_model", "liveness_model", "recognition_model"
+    return face_detector, liveness_model, face_recognizer
 
 def detect_faces(frame, detector_model):
-    """
-    Takes a frame and the detector model.
-    Returns a list of bounding boxes: [(x1, y1, x2, y2), ...]
-    """
-    # --- This is where you would:
-    # 1. Pre-process the frame (resize, normalize)
-    # 2. Run the detector_model
-    # 3. Post-process the results to get boxes
-    
-    # Placeholder: Return one fake bounding box for demonstration
-    # In a real app, this list could be empty or have many faces
-    h, w = frame.shape[:2]
-    if h > 0 and w > 0:
-        x1, y1 = w // 4, h // 4
-        x2, y2 = w * 3 // 4, h * 3 // 4
-        return [(x1, y1, x2, y2)]
-    return []
+    results = detector_model(frame)
+    boxes = []
+    for result in results:
+        for box in result.boxes:
+            x1, y1, x2, y2 = map(int, box.xyxy[0])
+            boxes.append((x1, y1, x2, y2))
+    return boxes    
+
 
 def check_liveness(face_crop, liveness_model):
-    """
-    Takes a face crop and the liveness model.
-    Returns a tuple: (is_live, score)
-    e.g., (True, 0.98) or (False, 0.15)
-    """
-    # --- This is where you would:
-    # 1. Pre-process the face_crop
-    # 2. Run the liveness_model
-    # 3. Interpret the output (e.g., softmax) to get a 'real' score
-    
-    # Placeholder: Return 'True' for this demo
-    is_live = True 
-    score = 0.99
-    
-    # Example of a spoof detection:
-    # if score < 0.5:
-    #    is_live = False
 
+    result = liveness_model.run(None, {"input": face_crop})
+    score = result[0][1]  # Assuming index 1 is the 'live
+    is_live = score > 0.5  # Example threshold
     return is_live, score
 
 def get_recognition_result(face_crop, recognizer_model, known_db):
@@ -89,7 +70,7 @@ def main():
     # Load your database of known users (you must create this)
     # This involves running your 'recognizer' on 5-10 photos
     # of each allowed user and saving their vectors.
-    known_user_db = {"Alice": [], "Bob": []} 
+    known_user_db = {"Mark": [], "Peem": [], "Ongsa": []} 
     print("Known user database loaded.")
 
     # Start the webcam
