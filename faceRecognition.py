@@ -3,14 +3,14 @@ import json
 import pandas as pd
 import re
 
-img_in = "input/input/realPeem3.jpg"
+img_in = "input/input/Check.jpg"
 img_db = "faceDB"
 
 def recognize_face(input_, database):
     try:
         # result = DeepFace.find(input_, database, normalization='ArcFace')
         result = DeepFace.find(input_, database)
-        print(str(result)+"==========================")
+        print(str(result))
         
         df = pd.DataFrame(result[0])
         record = json.loads(df.to_json(orient="records"))

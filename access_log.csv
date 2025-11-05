@@ -1,0 +1,5 @@
+Timestamp,Person,Spoofing,Authorized,Face_Image
+2025-11-05_23-27-05,Ongsa1,Real,Yes,Authorized\2025-11-05_23-27-05_Ongsa1.jpg
+2025-11-05_23-28-01,Ongsa1,Fake,No,Unauthorized\2025-11-05_23-28-01_Ongsa1.jpg
+2025-11-05_23-28-19,Unknown,Real,No,Unauthorized\2025-11-05_23-28-19_Unknown.jpg
+2025-11-05_23-28-37,Unknown,Fake,No,Unauthorized\2025-11-05_23-28-37_Unknown.jpg
