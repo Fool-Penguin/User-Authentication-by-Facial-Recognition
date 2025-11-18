@@ -94,28 +94,28 @@
         });
 
         video.srcObject = stream;
-        statusEl.textContent = "✅ Camera started. Make sure your face is visible.";
+        statusEl.textContent = "Camera started. Make sure your face is visible.";
       } catch (err) {
         console.error(err);
-        statusEl.textContent = "❌ Could not start camera: " + err.message;
+        statusEl.textContent = "Could not start camera: " + err.message;
       }
     });
 
     // Capture frame & send to server
     captureBtn.addEventListener("click", async () => {
       if (!stream) {
-        statusEl.textContent = "⚠️ Please start the camera first.";
+        statusEl.textContent = "Please start the camera first.";
         return;
       }
 
-      statusEl.textContent = "⏳ Capturing frame...";
+      statusEl.textContent = "Capturing frame...";
       resultEl.textContent = "";
 
       const videoWidth = video.videoWidth;
       const videoHeight = video.videoHeight;
 
       if (!videoWidth || !videoHeight) {
-        statusEl.textContent = "⚠️ Waiting for video to be ready. Try again in a moment.";
+        statusEl.textContent = "Waiting for video to be ready. Try again in a moment.";
         return;
       }
 
@@ -127,11 +127,11 @@
 
       canvas.toBlob(async (blob) => {
         if (!blob) {
-          statusEl.textContent = "❌ Failed to capture image.";
+          statusEl.textContent = "Failed to capture image.";
           return;
         }
 
-        statusEl.textContent = "⏳ Sending image to server...";
+        statusEl.textContent = "Sending image to server...";
         captureBtn.disabled = true;
 
         try {
@@ -141,11 +141,12 @@
           const res = await fetch("/recognize_face", {
             method: "POST",
             body: formData,
+            credentials: "same-origin"  
           });
 
           if (!res.ok) {
             const text = await res.text();
-            statusEl.textContent = `❌ Server error: ${res.status}`;
+            statusEl.textContent = `Server error: ${res.status}`;
             console.error(text);
             captureBtn.disabled = false;
             return;
@@ -154,30 +155,30 @@
           const data = await res.json();
           console.log("Server response:", data);
 
-          // If recognized + real + authorized → redirect
+          // If recognized + real + authorized → redirect (POST)
           if (data.ok && data.recognized && data.real && data.authorized) {
-            statusEl.textContent = "✅ Access granted! Redirecting...";
-            // Small delay so user sees the message
-            setTimeout(() => {
-              window.location.href = "/success";
-            }, 500);
+            statusEl.textContent = "Access granted! Redirecting...";
+
+            const form = document.createElement("form");
+            form.method = "POST";
+            form.action = "/success";
+            document.body.appendChild(form);
+
+            setTimeout(() => form.submit(), 300);
             return;
           }
-
-          // Otherwise show reason
-          statusEl.textContent = "⚠️ Face not recognized or not authorized.";
+          statusEl.textContent = "Face not recognized or not authorized.";
           resultEl.textContent = `Reason: ${data.reason}`;
 
         } catch (err) {
           console.error(err);
-          statusEl.textContent = "❌ Request failed: " + err.message;
+          statusEl.textContent = "Request failed: " + err.message;
         } finally {
           captureBtn.disabled = false;
         }
       }, "image/jpeg", 0.9);
     });
 
-    // Stop camera on page unload (optional)
     window.addEventListener("beforeunload", () => {
       if (stream) {
         stream.getTracks().forEach((t) => t.stop());
