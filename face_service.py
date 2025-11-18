@@ -92,7 +92,7 @@ def recognize_face(input_, database):
     returns: (found_bool, record_dict_or_None)
     """
     try:
-        result = DeepFace.find(input_, database, enforce_detection=False)
+        result = DeepFace.find(input_, database,enforce_detection=False)
         print(str(result))
 
         if not result or len(result[0]) == 0:
@@ -100,18 +100,8 @@ def recognize_face(input_, database):
 
         df = pd.DataFrame(result[0])
         record = json.loads(df.to_json(orient="records"))
-
-        with open("match.json", "w") as f:
-            for i in record:
-                try:
-                    if i.get('confidence', 0) >= 65:
-                        f.write(json.dumps(i["identity"].strip("faceDB/"), indent=2))
-                        f.write("\n")
-                except Exception as e:
-                    print("Error writing identity: ", str(e))
-                    return False, None
-            print("JSON File Saved")
-
+        # print("Recognition record: ", df.iloc[0])
+        print("Recognition record: ", record[0])
         # Best match = first row
         return True, record[0]
 
@@ -169,10 +159,20 @@ def process_image_bytes(image_bytes, database="faceDB"):
         }
 
     # 3) Anti-spoofing
-    spoof_check = DeepFace.extract_faces(face, anti_spoofing=True, enforce_detection=False)
+    spoof_check = DeepFace.extract_faces(face, anti_spoofing=True,enforce_detection=False)
     real = spoof_check[0].get("is_real", False)
+    score = spoof_check[0]["antispoof_score"]
+    print(f"Anti-spoofing score: {score}")
     print(f"Spoofing check result: {real}")
-
+    if score < 0.8:
+        print("Spoofing detected!")
+        return {
+        "recognized": None,
+        "real": bool(real),
+        "authorized": False,
+        "name": None,
+        "reason": "spoofing_detected"
+        }
     # 4) Recognition
     found, who = recognize_face(face, database)
     who_name = "Unknown"
@@ -184,13 +184,14 @@ def process_image_bytes(image_bytes, database="faceDB"):
         who_name = os.path.splitext(base)[0]       # -> Ongsa1
         print(f"Found face in database: {who_name}")
 
-        if real:
+        if real == True and who['confidence'] >= 65:
             authorized = True
             print(f"Found face in database! Welcome back, {who_name}")
         else:
             authorized = False
             print("Spoofing detected for a known person!")
     else:
+        authorized = False
         print("Not found in database.")
 
     # 5) Log
@@ -209,7 +210,8 @@ def process_image_bytes(image_bytes, database="faceDB"):
         "real": bool(real),
         "authorized": bool(authorized),
         "name": who_name if found else None,
-        "reason": "ok" if authorized or found else "not_in_db_or_spoof",
+        "reason": "Welcome" if authorized and found else "Not in database",
         "time_ms": int((end_time - start_time) * 1000),
+    
     }
 
