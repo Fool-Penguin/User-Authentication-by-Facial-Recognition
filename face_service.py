@@ -186,7 +186,7 @@ def process_image_bytes(image_bytes, database="faceDB"):
 
         if real:
             authorized = True
-            print(f"Found face in database! Welcome back, {who_name} 😊🙏🥀")
+            print(f"Found face in database! Welcome back, {who_name}")
         else:
             authorized = False
             print("Spoofing detected for a known person!")
@@ -212,3 +212,4 @@ def process_image_bytes(image_bytes, database="faceDB"):
         "reason": "ok" if authorized or found else "not_in_db_or_spoof",
         "time_ms": int((end_time - start_time) * 1000),
     }
+
