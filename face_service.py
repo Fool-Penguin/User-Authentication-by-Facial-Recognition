@@ -60,10 +60,7 @@ print("Models loaded (for web API).")
 
 # ----------------- Face detection -----------------
 def detect_face(frame):
-    """
-    frame: BGR image (numpy array)
-    returns: (cropped_face, num_faces)
-    """
+
     results = face_detector(frame)
     boxes = results[0].boxes.xyxy.cpu().numpy()
 
@@ -86,11 +83,6 @@ def detect_face(frame):
 
 # ----------------- Recognition -----------------
 def recognize_face(input_, database):
-    """
-    input_: BGR face image
-    database: path to faceDB folder
-    returns: (found_bool, record_dict_or_None)
-    """
     try:
         result = DeepFace.find(input_, database,enforce_detection=False)
         print(str(result))
@@ -112,11 +104,6 @@ def recognize_face(input_, database):
 
 # ----------------- Main helper for web -----------------
 def process_image_bytes(image_bytes, database="faceDB"):
-    """
-    Main function for Flask.
-    image_bytes: raw bytes from uploaded file
-    returns: dict for JSON response
-    """
 
     start_time = time.time()
 
