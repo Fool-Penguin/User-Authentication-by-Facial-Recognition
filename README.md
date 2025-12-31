@@ -11,7 +11,7 @@ This project investigates whether facial recognition can be used to authenticate
 
 ---
 
-## What I Did
+## What we Did
 - Designed the overall authentication workflow
 - Implemented face detection to localize faces from input images
 - Applied facial recognition to compare detected faces with stored user data
